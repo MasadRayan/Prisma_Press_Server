@@ -1,0 +1,13 @@
+model User {
+    id           String       @id @default(uuid())
+    name         String       @db.VarChar(255)
+    email        String       @unique @db.VarChar(255)
+    activeStatus ActiveStatus @default(ACTIVE)
+    role         UserRole     @default(USER)
+    createdAt    DateTime     @default(now())
+    updatedAt    DateTime     @updatedAt
+
+    profileId    Profile?
+
+    @@map("users")
+}
