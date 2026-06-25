@@ -22,13 +22,11 @@ const createUserIntoDb = async (payload: ICreateUser) => {
             name,
             email,
             password: hashedPassword,
-        }
-    })
-
-    await prisma.profile.create({
-        data: {
-            userId: createdUser.id,
-            profilePhoto: profilePhoto
+            profile: {
+                create: {
+                    profilePhoto
+                }
+            }
         }
     })
 
