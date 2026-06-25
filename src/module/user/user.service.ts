@@ -46,7 +46,26 @@ const createUserIntoDb = async (payload: ICreateUser) => {
     return userResponse
 }
 
-const getMyProfileFromDb = async () => {
+const getMyProfileFromDb = async (userId : string) => {
+
+    const user = await prisma.user.findUniqueOrThrow({
+        where: {
+            id: userId
+        },
+        omit : {
+            password: true
+        },
+        include: {
+            profile: true
+        }
+    });
+
+    if (!user) {
+        throw new Error("User not found");
+    }
+
+    return user
+
 }
 
 
