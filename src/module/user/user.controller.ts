@@ -16,7 +16,12 @@ const registerUser = catchAsync(async (req: Request, res: Response, next: NextFu
     data: user,
   })
 })
+
+const getMyProfile = catchAsync(async (req: Request, res: Response, next: NextFunction) => {
+  res.send("Hiii")
+})
  
 export const userController = {
   registerUser,
+  getMyProfile
 };

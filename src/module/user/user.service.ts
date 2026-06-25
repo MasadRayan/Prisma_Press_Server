@@ -46,7 +46,11 @@ const createUserIntoDb = async (payload: ICreateUser) => {
     return userResponse
 }
 
+const getMyProfileFromDb = async () => {
+}
+
 
 export const userService = {
-    createUserIntoDb
+    createUserIntoDb,
+    getMyProfileFromDb
 }
