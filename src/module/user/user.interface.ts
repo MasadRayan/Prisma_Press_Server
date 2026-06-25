@@ -5,3 +5,8 @@ export interface ICreateUser {
     profilePhoto?: string
 }
 
+export interface IUpdateUser {
+    name: string;
+    bio?: string;
+    profilePhoto?: string
+}
