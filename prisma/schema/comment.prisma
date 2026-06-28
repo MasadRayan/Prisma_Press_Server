@@ -11,5 +11,7 @@ model Comment {
     authorId String
     author   User   @relation(fields: [authorId], references: [id], onDelete: Cascade)
 
+    @@index([authorId])
+    @@index([postId])
     @@map("comments")
 }
