@@ -9,5 +9,8 @@ model User {
   password     String
   profile      Profile?
 
+  comments Comment[]
+  posts    Post[]
+
   @@map("users")
 }
