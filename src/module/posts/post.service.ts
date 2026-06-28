@@ -1,4 +1,4 @@
-import { CommentStatus } from "../../../generated/prisma/enums";
+import { CommentStatus, PostStatus } from "../../../generated/prisma/enums";
 import { prisma } from "../../lib/prisma";
 import { ICreatePost, IUpdatePost } from "./post.interface";
 
@@ -163,6 +163,60 @@ const deletePostFromDb = async (
   });
 };
 
+const getStateFromDb = async () => {
+    const AllStateTransaction = await prisma.$transaction(
+        async (tx) => {
+            const totalPost = await tx.post.count();
+            const totalPublishedPost = await tx.post.count({
+                where: {
+                    status: PostStatus.PUBLISHED
+                }
+            })
+            const totalArchivedPost = await tx.post.count({
+                where: {
+                    status: PostStatus.ARCHIVED
+                }
+            })
+            const totalDraftPost = await tx.post.count({
+                where: {
+                    status: PostStatus.DRAFT
+                }
+            })
+            const totalComment = await tx.comment.count();
+            const totalApprovedComment = await tx.comment.count({
+                where: {
+                    status: CommentStatus.APPROVED
+                }
+            })
+            const totalRejectedComment = await tx.comment.count({
+                where: {
+                    status : CommentStatus.REJECTED
+                }
+            })
+            const totalUser = await tx.user.count();
+            const AggrigatedViewsCount = await tx.post.aggregate({
+                _sum : {
+                    views: true
+                }
+            })
+            const totalViews = AggrigatedViewsCount._sum.views;
+
+            return {
+                totalPost,
+                totalPublishedPost,
+                totalArchivedPost,
+                totalDraftPost,
+                totalComment,
+                totalApprovedComment,
+                totalRejectedComment,
+                totalUser,
+                totalViews
+            }
+        } 
+    )
+    return AllStateTransaction
+}
+
 export const postService = {
   createPostIntoDb,
   getAllPostFromDb,
@@ -170,4 +224,5 @@ export const postService = {
   getMyPostFromDb,
   updatePostIntoDb,
   deletePostFromDb,
+  getStateFromDb
 };
