@@ -22,7 +22,6 @@ app.use(cookieParser());
 
 app.get("/", async(req, res) => {
     const users = await prisma.user.findMany();
-    console.log(users)
     res.send("Hello World!");
 });
 

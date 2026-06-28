@@ -35,8 +35,6 @@ export const auth = (...requiredRole : UserRole[]) => {
       throw new Error(verifyToken.error);
     }
     const { id, name, email, role } = verifyToken.data as JwtPayload;
-    console.log(role)
-
     if (!requiredRole.includes(role)) {
         throw new Error("You are not authorized to access this route");
     }
