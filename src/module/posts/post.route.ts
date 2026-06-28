@@ -7,7 +7,7 @@ const router = Router();
 
 router.post("/", auth(UserRole.ADMIN, UserRole.USER, UserRole.AUTHOR), postController.createPost)
 router.get("/", postController.getAllPost);
+router.get("/my-posts", auth(UserRole.ADMIN, UserRole.USER, UserRole.AUTHOR), postController.getMyPosts);
 router.get("/:postId", postController.getPostById);
-
 
 export const postRoute = router
