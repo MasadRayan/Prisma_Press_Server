@@ -29,8 +29,46 @@ const getAllPostFromDb = async () =>{
     return result
 }
 
+const getPostByIdFromDB = async (postId : string) => {
+    const post = await prisma.post.findUniqueOrThrow({
+        where: {
+            id: postId
+        },
+        include: {
+            author: {
+                omit: {
+                    password: true
+                }
+            },
+            comments: true
+        }
+    })
+
+    const updatedPost = await prisma.post.update({
+        where: {
+            id: postId
+        },
+        data: {
+            views: {
+                increment: 1
+            }
+        },
+        include: {
+            author: {
+                omit: {
+                    password: true
+                }
+            },
+            comments: true
+        }
+    })
+
+    return updatedPost
+}
+
 
 export const postService = {
     createPostIntoDb,
-    getAllPostFromDb
+    getAllPostFromDb,
+    getPostByIdFromDB
 }

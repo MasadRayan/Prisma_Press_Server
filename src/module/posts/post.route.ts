@@ -6,7 +6,8 @@ import { UserRole } from "../../../generated/prisma/client";
 const router = Router();
 
 router.post("/", auth(UserRole.ADMIN, UserRole.USER, UserRole.AUTHOR), postController.createPost)
-router.get("/", postController.getAllPost)
+router.get("/", postController.getAllPost);
+router.get("/:postId", postController.getPostById);
 
 
 export const postRoute = router
