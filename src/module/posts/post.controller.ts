@@ -58,9 +58,30 @@ const getMyPosts = catchAsync(async (req: Request, res: Response, next: NextFunc
     })
 })
 
+const updatePost = catchAsync(async (req: Request, res: Response, next: NextFunction) => {
+    const authorId = req.user?.id as string;
+    const postId = req.params.postId as string
+    if (!postId) {
+        throw new Error ("Post id is required");
+    }
+
+    const payload = req.body;
+    const isAdmin = req.user?.role === "ADMIN";
+
+    const result = await postService.updatePostIntoDb(authorId, postId, payload, isAdmin);
+
+    sendResponse(res, {
+        success: true,
+        statusCode: httpStatus.OK,
+        message: "Post updated successfully",
+        data: result
+    })
+})
+
 export const postController = {
     getAllPost,
     createPost,
     getPostById,
-    getMyPosts
+    getMyPosts,
+    updatePost
 }
