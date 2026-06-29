@@ -47,7 +47,32 @@ const getCommentByAuthorId = async (authorId : string) => {
     return result
 }
 
+const getCommentByIdFromDB = async (commentId : string) => {
+    const result = await prisma.comment.findUniqueOrThrow({
+        where: {
+            id: commentId
+        },
+        include: {
+            author: {
+                select: {
+                    name: true,
+                    email: true,
+                    role: true
+                }
+            },
+            post: {
+                select: {
+                    id: true,
+                    title: true
+                }
+            }
+        }
+    })
+    return result
+}
+
 export const commentService = {
     createCommenntIntoDb,
-    getCommentByAuthorId
+    getCommentByAuthorId,
+    getCommentByIdFromDB
 }
