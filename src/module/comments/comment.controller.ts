@@ -6,7 +6,8 @@ import httpStatus from "http-status";
 
 const createComment = catchAsync(async (req: Request, res: Response, next: NextFunction) => {
     const payload = req.body;   
-    const result = await commentService.createCommenntIntoDb(payload);
+    const authorId = req.user?.id as string;
+    const result = await commentService.createCommenntIntoDb(payload, authorId);
 
     sendResponse(res, {
         success: true,

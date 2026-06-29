@@ -1,7 +1,7 @@
 import { prisma } from "../../lib/prisma";
 import { ICreateComment } from "./comment.interface";
 
-const createCommenntIntoDb = async (payload: ICreateComment) => {
+const createCommenntIntoDb = async (payload: ICreateComment, authorId: string) => {
     const {postId} = payload;
 
     const isPostExists = await prisma.post.findUniqueOrThrow({
@@ -13,7 +13,7 @@ const createCommenntIntoDb = async (payload: ICreateComment) => {
     const result = await prisma.comment.create({
         data: {
             ...payload,
-            authorId: isPostExists.authorId
+            authorId
         }
     })
 
