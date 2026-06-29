@@ -29,6 +29,16 @@ const getMyProfile = catchAsync(async (req: Request, res: Response, next: NextFu
   })
 })
 
+const getAllUser = catchAsync(async (req: Request, res: Response, next: NextFunction) => {
+  const result = await userService.getAllUserFromDB();
+  sendResponse(res, {
+    success: true,
+    statusCode: httpStatus.OK,
+    message: "All users fetched successfully",
+    data: result
+  })
+})
+
 const updateMyProfile = catchAsync( async (req: Request, res: Response, next: NextFunction) => {
   const userId = req.user?.id as string;
   const payload = req.body;
@@ -46,5 +56,6 @@ const updateMyProfile = catchAsync( async (req: Request, res: Response, next: Ne
 export const userController = {
   registerUser,
   getMyProfile,
-  updateMyProfile
+  updateMyProfile,
+  getAllUser
 };
