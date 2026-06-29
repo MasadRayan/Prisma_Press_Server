@@ -28,6 +28,17 @@ const getCommentByAuthorId = catchAsync(async (req: Request, res: Response, next
     })
 });
 
+const getCommentByPostId = catchAsync(async (req: Request, res: Response, next: NextFunction) => {
+    const postId = req.params.postId as string;
+    const result = await commentService.getCommentByPostIdFromDB(postId);
+    sendResponse(res, {
+        success: true,
+        statusCode: httpStatus.OK,
+        message: "Comment fetched successfully",
+        data: result
+    })
+})
+
 const getCommentById = catchAsync(async (req: Request, res: Response, next: NextFunction) => {
     const commentId = req.params.commentId as string;
     const result = await commentService.getCommentByIdFromDB(commentId);
@@ -43,5 +54,6 @@ const getCommentById = catchAsync(async (req: Request, res: Response, next: Next
 export const commentController = {
     createComment,
     getCommentByAuthorId,
-    getCommentById
+    getCommentById,
+    getCommentByPostId
 }
