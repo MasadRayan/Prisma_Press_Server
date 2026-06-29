@@ -51,6 +51,19 @@ const getCommentById = catchAsync(async (req: Request, res: Response, next: Next
     })
 })
 
+const moderateComment = catchAsync(async (req: Request, res: Response, next: NextFunction) => {
+    const isAdmin = req.user?.role === "ADMIN";
+    const commentId = req.params.commentId as string;
+    const payload = req.body;
+    const result = await commentService.moderateComment(commentId, isAdmin, payload);
+    sendResponse(res, {
+        success: true,
+        statusCode: httpStatus.OK,
+        message: "Comment moderated successfully",
+        data: result
+    })
+})
+
 const updateComment = catchAsync(async (req: Request, res: Response, next: NextFunction) => {
     const commentId = req.params.commentId as string;
     const authorId = req.user?.id as string;
@@ -77,11 +90,13 @@ const deletePost = catchAsync(async (req: Request, res: Response, next: NextFunc
     })
 })
 
+
 export const commentController = {
     createComment,
     getCommentByAuthorId,
     getCommentById,
     getCommentByPostId,
+    moderateComment,
     updateComment,
     deletePost
 }

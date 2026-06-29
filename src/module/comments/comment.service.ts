@@ -1,5 +1,5 @@
 import { prisma } from "../../lib/prisma";
-import { ICreateComment, IUpdateComment } from "./comment.interface";
+import { ICreateComment, IModerateComment, IUpdateComment } from "./comment.interface";
 
 const createCommenntIntoDb = async (payload: ICreateComment, authorId: string) => {
     const {postId} = payload;
@@ -98,6 +98,40 @@ const getCommentByIdFromDB = async (commentId : string) => {
     return result
 }
 
+const moderateComment = async (commentId: string, isAdmin: boolean, payload: IModerateComment) => {
+    const isCommentExists = await prisma.comment.findUnique({
+        where: {
+            id: commentId
+        },
+        select: {
+            id: true,
+            status: true
+        }
+    });
+
+    if (!isCommentExists) {
+        throw new Error("Comment not found");
+    };
+
+    if (!isAdmin) {
+        throw new Error("You are not authorized to moderate this comment");
+    };
+    
+     if (isCommentExists.status === payload.status) {
+        throw new Error(
+            `Comment is already ${payload.status}`
+        );
+    }
+
+    const result = await prisma.comment.update({
+        where: {
+            id: commentId
+        },
+        data : payload
+    })
+    return result
+}
+
 const updateCommentInDB = async (commentId: string, payload: IUpdateComment, authorId: string) => {
     const commentExists = await prisma.comment.findUniqueOrThrow({
         where: {
@@ -162,6 +196,7 @@ export const commentService = {
     getCommentByAuthorId,
     getCommentByIdFromDB,
     getCommentByPostIdFromDB,
+    moderateComment,
     updateCommentInDB,
     deleteCommentFromDB
 }
