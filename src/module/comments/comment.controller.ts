@@ -64,10 +64,24 @@ const updateComment = catchAsync(async (req: Request, res: Response, next: NextF
     })
 })
 
+const deletePost = catchAsync(async (req: Request, res: Response, next: NextFunction) => {
+    const commentId = req.params.commentId as string;
+    const authorId = req.user?.id as string;
+    const isAdmin = req.user?.role === "ADMIN"
+    await commentService.deleteCommentFromDB(commentId, authorId, isAdmin);
+    sendResponse(res, {
+        success: true,
+        statusCode: httpStatus.OK,
+        message: "Comment deleted successfully",
+        data: null
+    })
+})
+
 export const commentController = {
     createComment,
     getCommentByAuthorId,
     getCommentById,
     getCommentByPostId,
-    updateComment
+    updateComment,
+    deletePost
 }

@@ -134,10 +134,34 @@ const updateCommentInDB = async (commentId: string, payload: IUpdateComment, aut
 
 }
 
+const deleteCommentFromDB = async (commentId: string, authorId: string, isAdmin: boolean) => {
+    const comment = await prisma.comment.findUnique({
+        where: {
+            id : commentId
+        }
+    });
+
+    if (!comment) {
+        throw new Error("Comment not found")
+    }
+
+    if (!isAdmin && comment.authorId !== authorId) {
+        throw new Error("You are not authorized to delete this comment")
+    }
+
+    await prisma.comment.delete({
+        where: {
+            id: commentId
+        }
+    })
+
+}
+
 export const commentService = {
     createCommenntIntoDb,
     getCommentByAuthorId,
     getCommentByIdFromDB,
     getCommentByPostIdFromDB,
-    updateCommentInDB
+    updateCommentInDB,
+    deleteCommentFromDB
 }
