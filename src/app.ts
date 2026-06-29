@@ -8,6 +8,7 @@ import bcrypt from "bcryptjs";
 import { userRoute } from "./module/user/user.route";
 import { authRoute } from "./module/auth/auth.route";
 import { postRoute } from "./module/posts/post.route";
+import { commentRoute } from "./module/comments/comment.route";
 
 const app : Application = express();
 
@@ -28,5 +29,6 @@ app.get("/", async(req, res) => {
 app.use("/api/users", userRoute)
 app.use("/api/auth", authRoute)
 app.use("/api/posts", postRoute)
+app.use("/api/comments", commentRoute)
 
 export default app;
