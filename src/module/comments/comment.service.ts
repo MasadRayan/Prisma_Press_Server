@@ -4,7 +4,7 @@ import { ICreateComment } from "./comment.interface";
 const createCommenntIntoDb = async (payload: ICreateComment, authorId: string) => {
     const {postId} = payload;
 
-    const isPostExists = await prisma.post.findUniqueOrThrow({
+     await prisma.post.findUniqueOrThrow({
         where: {
             id: postId
         }
@@ -20,6 +20,34 @@ const createCommenntIntoDb = async (payload: ICreateComment, authorId: string) =
     return result
 }
 
+const getCommentByAuthorId = async (authorId : string) => {
+    const result = await prisma.comment.findMany({
+        where: {
+            authorId
+        },
+        orderBy: {
+            createdAt: "desc"
+        },
+        include: {
+            author: {
+                select: {
+                    name: true,
+                    email: true,
+                    role: true
+                }
+            },
+            post: {
+                select: {
+                    id: true,
+                    title: true
+                }
+            }
+        }
+    })
+    return result
+}
+
 export const commentService = {
-    createCommenntIntoDb
+    createCommenntIntoDb,
+    getCommentByAuthorId
 }
