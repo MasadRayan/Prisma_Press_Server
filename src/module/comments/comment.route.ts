@@ -9,5 +9,6 @@ router.post("/", auth(UserRole.ADMIN, UserRole.AUTHOR, UserRole.USER) ,commentCo
 router.get("/author/:authorId", commentController.getCommentByAuthorId);
 router.get("/post/:postId", commentController.getCommentByPostId);
 router.get("/:commentId", commentController.getCommentById);
+router.patch("/:commentId", auth(UserRole.ADMIN, UserRole.AUTHOR, UserRole.USER), commentController.updateComment);
 
 export const commentRoute = router;

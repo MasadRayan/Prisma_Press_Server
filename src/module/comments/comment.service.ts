@@ -1,5 +1,5 @@
 import { prisma } from "../../lib/prisma";
-import { ICreateComment } from "./comment.interface";
+import { ICreateComment, IUpdateComment } from "./comment.interface";
 
 const createCommenntIntoDb = async (payload: ICreateComment, authorId: string) => {
     const {postId} = payload;
@@ -98,9 +98,46 @@ const getCommentByIdFromDB = async (commentId : string) => {
     return result
 }
 
+const updateCommentInDB = async (commentId: string, payload: IUpdateComment, authorId: string) => {
+    const commentExists = await prisma.comment.findUniqueOrThrow({
+        where: {
+            id: commentId
+        }
+    })
+
+    if (commentExists.authorId !== authorId) {
+        throw new Error("You are not authorized to update this comment")
+    }
+
+    const result = await prisma.comment.update({
+        where: {
+            id: commentId
+        },
+        data: payload,
+        include: {
+            author: {
+                select: {
+                    name: true,
+                    email: true,
+                    role: true
+                }
+            },
+            post: {
+                select: {
+                    id: true,
+                    title: true
+                }
+            }
+        }
+    })
+    return result
+
+}
+
 export const commentService = {
     createCommenntIntoDb,
     getCommentByAuthorId,
     getCommentByIdFromDB,
-    getCommentByPostIdFromDB
+    getCommentByPostIdFromDB,
+    updateCommentInDB
 }
