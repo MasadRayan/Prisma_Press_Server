@@ -1,7 +1,7 @@
 import { promiseHooks } from "node:v8";
 import { CommentStatus, PostStatus } from "../../../generated/prisma/enums";
 import { prisma } from "../../lib/prisma";
-import { ICreatePost, IUpdatePost } from "./post.interface";
+import { ICreatePost, IGetAllPostQuery, IUpdatePost } from "./post.interface";
 import { PostWhereInput } from "../../../generated/prisma/models";
 
 const createPostIntoDb = async (userId: string, payload: ICreatePost) => {
@@ -13,16 +13,6 @@ const createPostIntoDb = async (userId: string, payload: ICreatePost) => {
   });
   return result;
 };
-
-interface IGetAllPostQuery extends PostWhereInput {
-  title?: string;
-  content?: string;
-  searchTerm?: string;
-  limit?: string;
-  page?: string;
-  sortBy?: string;
-  sortOrder?: string;
-}
 
 const getAllPostFromDb = async (query: IGetAllPostQuery) => {
   const limit = query.limit ? Number(query.limit) : 10;

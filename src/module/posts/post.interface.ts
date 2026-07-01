@@ -1,4 +1,5 @@
 import { PostStatus } from "../../../generated/prisma/enums";
+import { PostWhereInput } from "../../../generated/prisma/models";
 
 export interface ICreatePost {
     title : string
@@ -17,3 +18,13 @@ export interface ICreatePost {
     status ?: PostStatus
     tags ?: string[]
  }
+
+ export interface IGetAllPostQuery extends PostWhereInput {
+  title?: string;
+  content?: string;
+  searchTerm?: string;
+  limit?: string;
+  page?: string;
+  sortBy?: string;
+  sortOrder?: string;
+}
