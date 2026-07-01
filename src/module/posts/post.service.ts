@@ -15,6 +15,90 @@ const createPostIntoDb = async (userId: string, payload: ICreatePost) => {
 
 const getAllPostFromDb = async () => {
   const result = await prisma.post.findMany({
+    //Filtering/Exact Match
+    // where: {
+    //   title: "My Third Post",
+    //   content: "CR7"
+    // },
+
+    //Filtering/Partial Match
+    /**where: {
+      title: {
+        contains: "Ronaldo",
+        mode: "insensitive",
+      },
+      //Here It will not work because it is a AND condition so it will return only those post which have both title and content containing "Ronaldo"
+      content: {
+        contains: "Ronaldo"
+      }
+    },
+    */
+
+    //Filtering with OR condition
+    /**where: {
+      OR: [
+        {
+          title: {
+            contains: "Ronaldo",
+            mode: "insensitive"
+          }
+        },
+        {
+          content: {
+            contains: "Ronaldo",
+            mode: "insensitive"
+          }
+        }
+      ]
+    },
+    */
+
+    //Combining Searching and Filtering
+    /** 
+    where: {
+      AND: [
+        {
+          OR: [
+            {
+              title: {
+                contains: "Ronaldo",
+                mode: "insensitive",
+              }
+            },
+            {
+              content: {
+                contains: "Ronaldo",
+                mode: "insensitive"
+              }
+            }
+          ]
+        },
+        {
+          content: {
+            contains: "Ronaldo",
+            mode: "insensitive",
+          }
+        },
+        {
+          content: {
+            contains: "Ronaldo",
+            mode: "insensitive"
+          }
+        }
+      ]
+    },
+    */
+
+    //pagination: 
+    take: 2,
+    // skip: 0,
+    skip: 1,
+    // skip: 2,
+    // skip: 3,
+
+    //Theory:
+    //skip = (Page-1) * limit
+
     include: {
       author: {
         omit: {
