@@ -2,6 +2,7 @@ import { promiseHooks } from "node:v8";
 import { CommentStatus, PostStatus } from "../../../generated/prisma/enums";
 import { prisma } from "../../lib/prisma";
 import { ICreatePost, IUpdatePost } from "./post.interface";
+import { PostWhereInput } from "../../../generated/prisma/models";
 
 const createPostIntoDb = async (userId: string, payload: ICreatePost) => {
   const result = await prisma.post.create({
@@ -13,91 +14,57 @@ const createPostIntoDb = async (userId: string, payload: ICreatePost) => {
   return result;
 };
 
-const getAllPostFromDb = async () => {
+interface IGetAllPostQuery extends PostWhereInput {
+  title ?: string
+  content ?: string
+  searchTerm ?: string
+  limit ?: string
+  page ?: string
+  sortBy ?: string
+  sortOrder ?: string
+}
+
+
+const getAllPostFromDb = async (query: IGetAllPostQuery) => {
+  const limit = query.limit ? Number(query.limit) : 10;
+  const page  = query.page ? Number(query.page) : 1
+  const skip = (page - 1) * limit
+  const sortBy = query.sortBy ? query.sortBy : "createdAt";
+  const sortOrder  = query.sortOrder ? query.sortOrder : "desc"
   const result = await prisma.post.findMany({
-    //Filtering/Exact Match
-    // where: {
-    //   title: "My Third Post",
-    //   content: "CR7"
-    // },
-
-    //Filtering/Partial Match
-    /**where: {
-      title: {
-        contains: "Ronaldo",
-        mode: "insensitive",
-      },
-      //Here It will not work because it is a AND condition so it will return only those post which have both title and content containing "Ronaldo"
-      content: {
-        contains: "Ronaldo"
-      }
-    },
-    */
-
-    //Filtering with OR condition
-    /**where: {
-      OR: [
-        {
-          title: {
-            contains: "Ronaldo",
-            mode: "insensitive"
-          }
-        },
-        {
-          content: {
-            contains: "Ronaldo",
-            mode: "insensitive"
-          }
-        }
-      ]
-    },
-    */
-
-    //Combining Searching and Filtering
-    /** 
+    
     where: {
       AND: [
-        {
+        query.searchTerm ? {
           OR: [
             {
               title: {
-                contains: "Ronaldo",
-                mode: "insensitive",
+                contains: query.searchTerm ,
+                mode: "insensitive"
               }
             },
             {
-              content: {
-                contains: "Ronaldo",
+              content : {
+                contains: query.searchTerm,
                 mode: "insensitive"
               }
+  
             }
           ]
-        },
-        {
-          content: {
-            contains: "Ronaldo",
-            mode: "insensitive",
-          }
-        },
-        {
-          content: {
-            contains: "Ronaldo",
-            mode: "insensitive"
-          }
-        }
+        } : 
+        {},
+
+        query.title ? { title: query.title} : {},
+        query.content ? { content : query.content} : {}
       ]
     },
-    */
 
-    //pagination: 
-    take: 2,
-    // skip: 0,
-    skip: 1,
-    // skip: 2,
-    // skip: 3,
+    take: limit,
+    skip: skip,
 
-    //Theory:
-    //skip = (Page-1) * limit
+    orderBy: {
+      [sortBy] : sortOrder
+    },
 
     include: {
       author: {
@@ -106,10 +73,7 @@ const getAllPostFromDb = async () => {
         },
       },
       comments: true,
-    },
-    orderBy: {
-      createdAt: "desc",
-    },
+    }
   });
   return result;
 };
