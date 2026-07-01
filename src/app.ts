@@ -4,11 +4,11 @@ import cors from "cors";
 import config from "./config";
 import { prisma } from "./lib/prisma";
 import httpStatus from "http-status";
-import bcrypt from "bcryptjs";
 import { userRoute } from "./module/user/user.route";
 import { authRoute } from "./module/auth/auth.route";
 import { postRoute } from "./module/posts/post.route";
 import { commentRoute } from "./module/comments/comment.route";
+import { routeNotFoundHandler } from "./middleware/notFound";
 
 const app : Application = express();
 
@@ -30,5 +30,7 @@ app.use("/api/users", userRoute)
 app.use("/api/auth", authRoute)
 app.use("/api/posts", postRoute)
 app.use("/api/comments", commentRoute)
+
+app.use(routeNotFoundHandler)
 
 export default app;
