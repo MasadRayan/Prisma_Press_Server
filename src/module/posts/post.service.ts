@@ -15,55 +15,89 @@ const createPostIntoDb = async (userId: string, payload: ICreatePost) => {
 };
 
 interface IGetAllPostQuery extends PostWhereInput {
-  title ?: string
-  content ?: string
-  searchTerm ?: string
-  limit ?: string
-  page ?: string
-  sortBy ?: string
-  sortOrder ?: string
+  title?: string;
+  content?: string;
+  searchTerm?: string;
+  limit?: string;
+  page?: string;
+  sortBy?: string;
+  sortOrder?: string;
 }
-
 
 const getAllPostFromDb = async (query: IGetAllPostQuery) => {
   const limit = query.limit ? Number(query.limit) : 10;
-  const page  = query.page ? Number(query.page) : 1
-  const skip = (page - 1) * limit
+  const page = query.page ? Number(query.page) : 1;
+  const skip = (page - 1) * limit;
   const sortBy = query.sortBy ? query.sortBy : "createdAt";
-  const sortOrder  = query.sortOrder ? query.sortOrder : "desc"
-  const result = await prisma.post.findMany({
-    
-    where: {
-      AND: [
-        query.searchTerm ? {
-          OR: [
-            {
-              title: {
-                contains: query.searchTerm ,
-                mode: "insensitive"
-              }
-            },
-            {
-              content : {
-                contains: query.searchTerm,
-                mode: "insensitive"
-              }
-  
-            }
-          ]
-        } : 
-        {},
+  const sortOrder = query.sortOrder ? query.sortOrder : "desc";
 
-        query.title ? { title: query.title} : {},
-        query.content ? { content : query.content} : {}
-      ]
+  const tags = query.tags ? JSON.parse(query.tags as string) : undefined;
+  const tagArray = Array.isArray(tags) ? tags : []
+
+  const andConditions: PostWhereInput[] = [];
+
+  if (query.searchTerm) {
+    andConditions.push({
+      OR: [
+        {
+          title: {
+            contains: query.searchTerm,
+            mode: "insensitive",
+          },
+        },
+        {
+          content: {
+            contains: query.searchTerm,
+            mode: "insensitive",
+          },
+        },
+      ],
+    });
+  }
+
+  if (query.title) {
+    andConditions.push({
+      title: query.title,
+    })
+  }
+
+  if (query.content) {
+    andConditions.push({
+      content: query.content,
+    })
+  }
+
+
+  if (query.status) {
+    andConditions.push({
+      status: query.status,
+    })
+  }
+
+  if (query.authorId) {
+    andConditions.push({
+      authorId: query.authorId,
+    })
+  }
+
+  if (query.tags) {
+    andConditions.push({
+      tags: {
+        hasSome: tagArray,
+      },
+    });
+  }
+
+  const result = await prisma.post.findMany({
+    where: {
+      AND: andConditions,
     },
 
     take: limit,
     skip: skip,
 
     orderBy: {
-      [sortBy] : sortOrder
+      [sortBy]: sortOrder,
     },
 
     include: {
@@ -73,7 +107,7 @@ const getAllPostFromDb = async (query: IGetAllPostQuery) => {
         },
       },
       comments: true,
-    }
+    },
   });
   return result;
 };
