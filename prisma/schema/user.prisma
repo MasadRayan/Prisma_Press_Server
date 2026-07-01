@@ -8,10 +8,10 @@ model User {
   updatedAt    DateTime     @updatedAt
   password     String
   profile      Profile?
+  subscriptions Subscription?
 
   comments Comment[]
   posts    Post[]
-  subscriptions Subscription?
 
   @@map("users")
 }
