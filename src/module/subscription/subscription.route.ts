@@ -6,5 +6,6 @@ import { UserRole } from "../../../generated/prisma/enums";
 const router = Router();
 
 router.post("/checkout", auth(UserRole.ADMIN, UserRole.AUTHOR, UserRole.USER), subscriptionController.createCheckOutSession);
+router.post("/webhook", subscriptionController.webhookController)
 
 export const subscriptionRouter = router

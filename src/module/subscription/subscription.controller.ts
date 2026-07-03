@@ -16,6 +16,21 @@ const createCheckOutSession = catchAsync(async (req: Request, res:Response, next
     })
 })
 
+const webhookController = catchAsync(async (req: Request, res: Response, next: NextFunction) => {
+    const payload = req.body as Buffer;
+    const signature = req.headers["stripe-signature"]!;
+
+    await subscriptionService.webhookService(payload, signature as string)
+
+    sendResponse(res, {
+        success: true,
+        statusCode: httpStatus.OK,
+        message: "Checkout session created successfully",
+        data: null
+    })
+})
+
 export const subscriptionController = {
-    createCheckOutSession
+    createCheckOutSession,
+    webhookController
 }
