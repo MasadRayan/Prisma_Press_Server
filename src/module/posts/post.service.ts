@@ -19,7 +19,6 @@ const createPostIntoDb = async (userId: string, payload: ICreatePost) => {
     throw new Error("Please Subscribe to access the premium posts");
   }
 
-
   const result = await prisma.post.create({
     data: {
       ...payload,
@@ -93,6 +92,10 @@ const getAllPostFromDb = async (query: IGetAllPostQuery) => {
     });
   }
 
+  andConditions.push({
+    isPremium: false
+  })
+
   const result = await prisma.post.findMany({
     where: {
       AND: andConditions,
@@ -133,6 +136,7 @@ const getPostByIdFromDB = async (postId: string) => {
     const result = await tx.post.findUniqueOrThrow({
       where: {
         id: postId,
+        isPremium: false
       },
       include: {
         author: {
