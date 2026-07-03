@@ -12,6 +12,7 @@ import { routeNotFoundHandler } from "./middleware/notFound";
 import { globalErrorHandler } from "./middleware/globalErrorHandler";
 import { subscriptionRouter } from "./module/subscription/subscription.route";
 import e from "cors";
+import { premiumRoute } from "./module/premium/premium.route";
 
 const app: Application = express();
 
@@ -38,6 +39,7 @@ app.use("/api/auth", authRoute);
 app.use("/api/posts", postRoute);
 app.use("/api/comments", commentRoute);
 app.use("/api/subscription", subscriptionRouter);
+app.use("/api/premium", premiumRoute)
 
 app.use(routeNotFoundHandler);
 
