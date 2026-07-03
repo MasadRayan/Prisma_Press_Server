@@ -6,7 +6,7 @@ import { SubscriptionStatus } from "../../../generated/prisma/enums";
 const getPeriodEnd = (payload: Stripe.Subscription) => {
   const currentPeriodEndINMiliSecond =
     payload.items.data[0]?.current_period_end!;
-  const currentPeriodEnd = new Date(currentPeriodEndINMiliSecond);
+  const currentPeriodEnd = new Date(currentPeriodEndINMiliSecond * 1000);
   return currentPeriodEnd;
 };
 
