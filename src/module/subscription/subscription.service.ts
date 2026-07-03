@@ -2,127 +2,92 @@ import { Stripe } from "stripe";
 import config from "../../config";
 import { prisma } from "../../lib/prisma";
 import { stripe } from "../../lib/stripe";
+import { handleChangeSubcription, handleCheckOutComplete } from "./subscription.utils";
 
-const createCheckOutSession = async (userId : string) => {
-    const checkoutTrasnsaction = await prisma.$transaction(
-        async(tx) => {
-            const user = await tx.user.findUniqueOrThrow({
-                where: {
-                    id: userId
-                },
-                include: {
-                    subscriptions: true
-                }
-            })
+const createCheckOutSession = async (userId: string) => {
+  const checkoutTrasnsaction = await prisma.$transaction(async (tx) => {
+    const user = await tx.user.findUniqueOrThrow({
+      where: {
+        id: userId,
+      },
+      include: {
+        subscriptions: true,
+      },
+    });
 
-            let stripeCustomerId = user.subscriptions?.stripeCustomerId;
+    let stripeCustomerId = user.subscriptions?.stripeCustomerId;
 
-            if (!stripeCustomerId) {
-                //new customer, create a new stripe customer
-                const customer = await stripe.customers.create({
-                    email : user.email,
-                    name: user.name,
-                    metadata: {
-                        userId : user.id
-                    }
-                })
+    if (!stripeCustomerId) {
+      //new customer, create a new stripe customer
+      const customer = await stripe.customers.create({
+        email: user.email,
+        name: user.name,
+        metadata: {
+          userId: user.id,
+        },
+      });
 
-                stripeCustomerId = customer.id
-            }
-
-            const session = await stripe.checkout.sessions.create({
-                line_items: [{
-                    price: config.stripe_product_price_id,
-                    quantity: 1
-                }],
-                mode: "subscription",
-                customer : stripeCustomerId,
-                payment_method_types: ["card"],
-                success_url: `${config.app_url}/premium/success`,
-                cancel_url: `${config.app_url}/payment/cancel`,
-                metadata: {
-                    userId: user.id
-                }
-            })
-
-            return session.url
-        }
-        
-    )
-
-    return {
-        paymentURL : checkoutTrasnsaction
+      stripeCustomerId = customer.id;
     }
-}
 
-const webhookService = async(payload : Buffer, signature: string) => {
-    const endpointSecret = config.stripe_webhook_secret
-    const event = stripe.webhooks.constructEvent(
-        payload,
-        signature,
-        endpointSecret
-    );
+    const session = await stripe.checkout.sessions.create({
+      line_items: [
+        {
+          price: config.stripe_product_price_id,
+          quantity: 1,
+        },
+      ],
+      mode: "subscription",
+      customer: stripeCustomerId,
+      payment_method_types: ["card"],
+      success_url: `${config.app_url}/premium/success`,
+      cancel_url: `${config.app_url}/payment/cancel`,
+      metadata: {
+        userId: user.id,
+      },
+    });
 
-    switch (event.type) {
-    case 'checkout.session.completed':
-    //Occurs when a Checkout Session has been successfully completed.
-      await handleCheckOutComplete(event.data.object as Stripe.Checkout.Session)
+    return session.url;
+  });
+
+  return {
+    paymentURL: checkoutTrasnsaction,
+  };
+};
+
+const webhookService = async (payload: Buffer, signature: string) => {
+  const endpointSecret = config.stripe_webhook_secret;
+  const event = stripe.webhooks.constructEvent(
+    payload,
+    signature,
+    endpointSecret,
+  );
+
+  switch (event.type) {
+    case "checkout.session.completed":
+      //Occurs when a Checkout Session has been successfully completed.
+      await handleCheckOutComplete(
+        event.data.object as Stripe.Checkout.Session,
+      );
       break;
-    case 'customer.subscription.created':
-    //Occurs whenever a customer is signed up for a new plan.
-      
+    case "customer.subscription.created":
+      //Occurs whenever a customer is signed up for a new plan.
+      await handleChangeSubcription(event.data.object);
       break;
-    case 'customer.subscription.deleted':
-    //Occurs whenever a customer’s subscription ends.
-    
+    case "customer.subscription.deleted":
+      //Occurs whenever a customer’s subscription ends.
+      await handleChangeSubcription(event.data.object);
       break;
     default:
       // Unexpected event type
       console.log(`Unhandled event type ${event.type}.`);
       break;
   }
-}
+};
 
-const getPeriodEnd = (payload: Stripe.Subscription) => {
-    const currentPeriodEndINMiliSecond =  payload.items.data[0]?.current_period_end!;
-      const currentPeriodEnd = new Date(currentPeriodEndINMiliSecond)
-      return currentPeriodEnd
-}
 
-const handleCheckOutComplete = async (session: Stripe.Checkout.Session) => {
-      const userId = session.metadata?.userId;
-      const stripeCustomerId = session.customer as string;
-      const stripeSubscriptionId = session.subscription as string;
-
-      if (!userId || !stripeCustomerId || !stripeSubscriptionId) {
-        throw new Error("Webhook Failed");
-      }
-
-      const stripeSubscription = await stripe.subscriptions.retrieve(stripeSubscriptionId);
-      const currentPeriodEnd = getPeriodEnd(stripeSubscription)
-
-      await prisma.subscription.upsert({
-        where: {
-            userId
-        },
-        create: {
-            userId,
-            stripeSubscriptionId,
-            stripeCustomerId,
-            currentPeriodEnd,
-            status: "ACTIVE"
-        },
-        update: {
-            stripeCustomerId,
-            stripeSubscriptionId,
-            currentPeriodEnd,
-            status: "ACTIVE"
-        }
-      })
-
-}
 
 export const subscriptionService = {
-    createCheckOutSession,
-    webhookService
-}
+  createCheckOutSession,
+  webhookService,
+};
