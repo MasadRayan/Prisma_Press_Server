@@ -1,6 +1,6 @@
 import { prisma } from "../../lib/prisma";
 
-const getAllPremiumPostFromDb = async (userId : string) => {
+const getAllPremiumPostFromDb = async () => {
     const result = await prisma.post.findMany({
         where: {
             isPremium: true

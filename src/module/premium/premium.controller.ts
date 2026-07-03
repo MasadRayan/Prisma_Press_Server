@@ -5,8 +5,7 @@ import { sendResponse } from "../../utils/sendResponse";
 import httpStatus from "http-status";
 
 const getAllPremiumPosts = catchAsync(async (req: Request, res: Response, next: NextFunction) => {
-    const userId = req.user?.id as string;
-    const result = await premiumService.getAllPremiumPostFromDb(userId)
+    const result = await premiumService.getAllPremiumPostFromDb()
 
     sendResponse(res, {
         success: true,
