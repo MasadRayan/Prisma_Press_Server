@@ -1,3 +1,4 @@
+import { Stripe } from "stripe";
 import config from "../../config";
 import { prisma } from "../../lib/prisma";
 import { stripe } from "../../lib/stripe";
@@ -65,7 +66,7 @@ const webhookService = async(payload : Buffer, signature: string) => {
     switch (event.type) {
     case 'checkout.session.completed':
     //Occurs when a Checkout Session has been successfully completed.
-      
+      await handleCheckOutComplete(event.data.object as Stripe.Checkout.Session)
       break;
     case 'customer.subscription.created':
     //Occurs whenever a customer is signed up for a new plan.
@@ -80,6 +81,45 @@ const webhookService = async(payload : Buffer, signature: string) => {
       console.log(`Unhandled event type ${event.type}.`);
       break;
   }
+}
+
+const getPeriodEnd = (payload: Stripe.Subscription) => {
+    const currentPeriodEndINMiliSecond =  payload.items.data[0]?.current_period_end!;
+      const currentPeriodEnd = new Date(currentPeriodEndINMiliSecond)
+      return currentPeriodEnd
+}
+
+const handleCheckOutComplete = async (session: Stripe.Checkout.Session) => {
+      const userId = session.metadata?.userId;
+      const stripeCustomerId = session.customer as string;
+      const stripeSubscriptionId = session.subscription as string;
+
+      if (!userId || !stripeCustomerId || !stripeSubscriptionId) {
+        throw new Error("Webhook Failed");
+      }
+
+      const stripeSubscription = await stripe.subscriptions.retrieve(stripeSubscriptionId);
+      const currentPeriodEnd = getPeriodEnd(stripeSubscription)
+
+      await prisma.subscription.upsert({
+        where: {
+            userId
+        },
+        create: {
+            userId,
+            stripeSubscriptionId,
+            stripeCustomerId,
+            currentPeriodEnd,
+            status: "ACTIVE"
+        },
+        update: {
+            stripeCustomerId,
+            stripeSubscriptionId,
+            currentPeriodEnd,
+            status: "ACTIVE"
+        }
+      })
+
 }
 
 export const subscriptionService = {
