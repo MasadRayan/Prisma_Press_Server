@@ -117,7 +117,21 @@ const getAllPostFromDb = async (query: IGetAllPostQuery) => {
       comments: true,
     },
   });
-  return result;
+
+  const totalPost = await prisma.post.count({
+    where: {
+      AND: andConditions
+    }
+  })
+  return {
+    data: result,
+    meta: {
+      page,
+      limit,
+      total: totalPost,
+      totalPage: Math.ceil(totalPost / limit)
+    }
+  };
 };
 
 const getPostByIdFromDB = async (postId: string) => {
