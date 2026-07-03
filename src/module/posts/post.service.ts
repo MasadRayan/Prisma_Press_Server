@@ -5,6 +5,21 @@ import { ICreatePost, IGetAllPostQuery, IUpdatePost } from "./post.interface";
 import { PostWhereInput } from "../../../generated/prisma/models";
 
 const createPostIntoDb = async (userId: string, payload: ICreatePost) => {
+
+  const user = await prisma.user.findUniqueOrThrow({
+    where: {
+      id: userId
+    },
+    include: {
+      subscriptions: true
+    }
+  })
+
+  if (payload.isPremium && user?.subscriptions?.status !== "ACTIVE") {
+    throw new Error("Please Subscribe to access the premium posts");
+  }
+
+
   const result = await prisma.post.create({
     data: {
       ...payload,

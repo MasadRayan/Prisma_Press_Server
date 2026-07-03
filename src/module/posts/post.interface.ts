@@ -5,8 +5,9 @@ export interface ICreatePost {
     title : string
     content: string
     thumbnail ?: string
-    isFeatured : boolean
-    status: PostStatus
+    isFeatured ?: boolean
+    isPremium ?: boolean
+    status?: PostStatus
     tags : string[]
  }
 
