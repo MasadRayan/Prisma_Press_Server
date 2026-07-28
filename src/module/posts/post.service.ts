@@ -115,6 +115,11 @@ const getAllPostFromDb = async (query: IGetAllPostQuery) => {
         },
       },
       comments: true,
+      _count: {
+        select: {
+          comments: true,
+        }
+      }
     },
   });
 
